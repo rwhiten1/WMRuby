@@ -1,0 +1,29 @@
+== WMRuby
+This is a very small project intended to allow ease of integration between Ruby and webMethods services.
+Instead of going the SOAP route, I have opted to write a small Java based client that calls services
+on an IntegrationServer.  In order to pull this into Ruby, I use the Ruby Java Bridge (RJB) to call services.
+I have abstracted IData down into the guts of the Java client, so inputs are passed in as Ruby hashes and outputs from
+services are also Ruby hashes.  These hashes mirror the underlying structure of a WM Document, and thus are tree like.
+Here is how to use it:
+
+
+require 'path/to/service_client'
+
+inputs = Hash.new
+top = Hash.new
+child = Hash.new
+#hash keys are symbols on the Ruby side,
+#but are converted into strings before peing passed into the JVM
+#keys need to match the "variable" names in the WM service
+top[:k1] = "value1"
+top[:k2] = child
+child[:c1k1] = "value1"
+child[:c1k2] = "value2"
+inputs[:docInputName] = top
+sc = ServiceClient.new
+outputs = sc.run_service(host.name.of.server:5555,username,pass,"the.service:toCall",inputs)
+
+#the output hash is also indexed with symbols
+o_top = outputs[:docOutputName]
+assert_equals "value1",o_top[:k1]
+
